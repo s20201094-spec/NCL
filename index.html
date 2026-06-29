@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>NCL Translator</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React and ReactDOM CDNs -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+    <!-- Babel for JSX compilation in-browser -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Custom Styles for Liquid Glass Theme -->
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Space+Mono:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Space Grotesk', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+            padding-top: env(safe-area-inset-top);
+            padding-bottom: env(safe-area-inset-bottom);
+            padding-left: env(safe-area-inset-left);
+            padding-right: env(safe-area-inset-right);
+            background: radial-gradient(circle at 50% 0%, #0d1224 0%, #030712 100%);
+        }
+        
+        .mono-font {
+            font-family: 'Space Mono', monospace;
+        }
+
+        /* Interactive Liquid Glass Animations */
+        @keyframes liquid-flow-1 {
+            0%, 100% { transform: translate(0px, 0px) scale(1) rotate(0deg); }
+            33% { transform: translate(80px, -120px) scale(1.3) rotate(120deg); }
+            66% { transform: translate(-60px, 60px) scale(0.8) rotate(240deg); }
+        }
+
+        @keyframes liquid-flow-2 {
+            0%, 100% { transform: translate(0px, 0px) scale(1) rotate(0deg); }
+            50% { transform: translate(-100px, 120px) scale(1.4) rotate(-180deg); }
+        }
+
+        @keyframes liquid-flow-3 {
+            0%, 100% { transform: translate(0px, 0px) scale(1); }
+            50% { transform: translate(120px, 40px) scale(1.2); }
+        }
+
+        .liquid-blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(100px);
+            mix-blend-mode: screen;
+            opacity: 0.28;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .blob-1 {
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, #4f46e5 0%, #312e81 100%);
+            top: -10%;
+            left: 10%;
+            animation: liquid-flow-1 25s infinite ease-in-out;
+        }
+
+        .blob-2 {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, #06b6d4 0%, #0891b2 100%);
+            bottom: -10%;
+            right: 5%;
+            animation: liquid-flow-2 30s infinite ease-in-out;
+        }
+
+        .blob-3 {
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, #ec4899 0%, #be185d 100%);
+            top: 40%;
+            left: 45%;
+            animation: liquid-flow-3 20s infinite ease-in-out;
+        }
+
+        /* Glassmorphic Panels */
+        .glass-panel {
+            background: rgba(15, 23, 42, 0.45);
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 
+                0 4px 30px rgba(0, 0, 0, 0.4),
+                inset 0 1px 1px rgba(255, 255, 255, 0.12),
+                inset 0 10px 20px rgba(255, 255, 255, 0.03);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Shine Reflection Overlay effect */
+        .glass-panel::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40%;
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0) 100%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .glass-input {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.6);
+        }
+
+        .glass-button {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            box-shadow: 
+                0 4px 15px rgba(0,0,0,0.2),
+                inset 0 1px 0 rgba(255,255,255,0.1);
+        }
+
+        .glass-button:active {
+            background: rgba(255, 255, 255, 0.02);
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.4);
+        }
+
+        /* Glass Refractive tabs */
+        .glass-tabs {
+            background: rgba(0, 0, 0, 0.55);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8);
+        }
+
+        /* Touch feedback & scroll adjustments */
+        button, select, textarea {
+            touch-action: manipulation;
+        }
+
+        /* Glass Scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+    </style>
+</head>
+<body class="text-slate-100 min-h-full flex flex-col overflow-x-hidden relative">
+
+    <!-- Ambient Liquid Layer Background -->
+    <div class="fixed inset-0 overflow-hidden pointer-events-none z-0">
+        <div class="liquid-blob blob-1"></div>
+        <div class="liquid-blob blob-2"></div>
+        <div class="liquid-blob blob-3"></div>
+    </div>
+
+    <div id="root" class="flex-1 flex flex-col w-full relative z-10"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+
+        // Base NCL mappings
+        const DIGIT_TO_SYMBOL = {
+            '1': '!',
+            '2': '@',
+            '3': '£',
+            '4': '$',
+            '5': '%',
+            '6': '^',
+            '7': '&',
+            '8': '*',
+            '9': '(',
+            '0': ')'
+        };
+
+        const SYMBOL_TO_DIGIT = Object.entries(DIGIT_TO_SYMBOL).reduce((acc, [digit, sym]) => {
+            acc[sym] = digit;
+            return acc;
+        }, {});
+
+        const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
+
+        function App() {
+            const [activeTab, setActiveTab] = useState("translator"); // translator, detranslator, grid
+            const [englishInput, setEnglishInput] = useState("ABC is !@£");
+            const [symbolOutput, setSymbolOutput] = useState("");
+            
+            const [symbolInput, setSymbolInput] = useState("! @ £   is   ! @ £");
+            const [englishOutput, setEnglishOutput] = useState("");
+
+            const [copied, setCopied] = useState(false);
+
+            // Translate English -> NCL Symbols
+            const encodeEnglish = (text) => {
+                if (!text) return "";
+                let symbolParts = [];
+                const words = text.split(/(\s+)/);
+
+                words.forEach(word => {
+                    if (word.trim() === "") {
+                        symbolParts.push(" "); // Preserve word spaces
+                        return;
+                    }
+
+                    let wordSymTokens = [];
+                    for (let char of word) {
+                        const upperChar = char.toUpperCase();
+                        if (ALPHABET.includes(upperChar)) {
+                            const numValue = ALPHABET.indexOf(upperChar) + 1;
+                            const numStr = numValue.toString();
+                            const symStr = numStr.split("").map(digit => DIGIT_TO_SYMBOL[digit] || digit).join("");
+                            wordSymTokens.push(symStr);
+                        } else if (/\d/.test(char)) {
+                            wordSymTokens.push(DIGIT_TO_SYMBOL[char] || char);
+                        } else {
+                            wordSymTokens.push(char);
+                        }
+                    }
+                    symbolParts.push(wordSymTokens.join(" "));
+                });
+
+                return symbolParts.join(" ").replace(/\s+/g, ' ');
+            };
+
+            // Translate NCL Symbols -> English
+            const decodeSymbols = (text) => {
+                if (!text) return "";
+                
+                const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                const symbolList = Object.values(DIGIT_TO_SYMBOL);
+                const sortedSymbols = [...symbolList].sort((a, b) => b.length - a.length);
+
+                const chunkToNumberStr = (chunk) => {
+                    let numStr = "";
+                    let i = 0;
+                    while (i < chunk.length) {
+                        let matched = false;
+                        for (let sym of sortedSymbols) {
+                            if (chunk.startsWith(sym, i)) {
+                                numStr += SYMBOL_TO_DIGIT[sym];
+                                i += sym.length;
+                                matched = true;
+                                break;
+                            }
+                        }
+                        if (!matched) {
+                            numStr += chunk[i];
+                            i++;
+                        }
+                    }
+                    return numStr;
+                };
+
+                const numToChar = (numStr) => {
+                    const val = parseInt(numStr, 10);
+                    if (!isNaN(val) && val >= 1 && val <= 26) {
+                        return ALPHABET[val - 1];
+                    }
+                    return numStr;
+                };
+
+                // Split words by double/triple spaces or standard punctuation spacing
+                const words = text.split(/\s{2,}/);
+
+                const decodedWords = words.map(word => {
+                    const letterChunks = word.split(/\s+/);
+                    return letterChunks.map(chunk => {
+                        if (!chunk) return "";
+                        const numStr = chunkToNumberStr(chunk);
+                        return numToChar(numStr);
+                    }).join("");
+                });
+
+                return decodedWords.join(" ");
+            };
+
+            // Trigger translations instantly on inputs changing
+            useEffect(() => {
+                setSymbolOutput(encodeEnglish(englishInput));
+            }, [englishInput]);
+
+            useEffect(() => {
+                setEnglishOutput(decodeSymbols(symbolInput));
+            }, [symbolInput]);
+
+            // Handle Clipboard copies
+            const copyToClipboard = (text) => {
+                const textarea = document.createElement('textarea');
+                textarea.value = text;
+                document.body.appendChild(textarea);
+                textarea.select();
+                try {
+                    document.execCommand('copy');
+                    setCopied(true);
+                    setTimeout(() => setCopied(false), 2000);
+                } catch (err) {
+                    console.error("Copy failed", err);
+                }
+                document.body.removeChild(textarea);
+            };
+
+            // Initialize Lucide icons on tab switches / renders
+            useEffect(() => {
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+            });
+
+            return (
+                <div className="flex-1 flex flex-col justify-between w-full">
+                    {/* Header Banner - Liquid Glass styling with NCL branding */}
+                    <header className="border-b border-white/10 bg-slate-950/40 backdrop-blur-md sticky top-0 z-50">
+                        <div className="max-w-5xl mx-auto px-4 py-3 md:py-4 flex flex-col md:flex-row items-center justify-between gap-3">
+                            <div className="flex items-center space-x-3 w-full md:w-auto justify-center md:justify-start">
+                                <div className="p-2.5 bg-gradient-to-br from-indigo-500/80 to-purple-600/80 rounded-xl border border-white/20 shadow-lg shadow-indigo-500/10 shrink-0">
+                                    <i data-lucide="binary" class="h-5 w-5 md:h-6 md:w-6 text-white"></i>
+                                </div>
+                                <div className="text-center md:text-left">
+                                    <h1 className="text-lg md:text-xl font-bold tracking-tight bg-gradient-to-r from-white via-indigo-100 to-white bg-clip-text text-transparent">
+                                        NCL TRANSLATOR
+                                    </h1>
+                                    <p className="text-[10px] md:text-[11px] text-indigo-200/60 tracking-wider mono-font uppercase">
+                                        Nexora Communication Language
+                                    </p>
+                                </div>
+                            </div>
+
+                            {/* No-wrap Refractive Tab bar */}
+                            <div className="flex glass-tabs p-1 rounded-xl w-full md:w-auto max-w-full overflow-x-auto scrollbar-none">
+                                <button
+                                    onClick={() => setActiveTab("translator")}
+                                    className={`flex-1 md:flex-none px-3 sm:px-5 py-2.5 rounded-lg text-[11px] sm:text-xs font-bold tracking-wide transition-all duration-200 flex items-center justify-center gap-1.5 active:scale-95 shrink-0 select-none touch-manipulation ${
+                                        activeTab === "translator"
+                                            ? "bg-white/10 text-white border border-white/20 shadow-inner backdrop-blur-md"
+                                            : "text-slate-400 hover:text-slate-200"
+                                    }`}
+                                    style={{ minHeight: '40px' }}
+                                >
+                                    <i data-lucide="arrow-right-left" class="h-3.5 w-3.5"></i>
+                                    Translator
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab("detranslator")}
+                                    className={`flex-1 md:flex-none px-3 sm:px-5 py-2.5 rounded-lg text-[11px] sm:text-xs font-bold tracking-wide transition-all duration-200 flex items-center justify-center gap-1.5 active:scale-95 shrink-0 select-none touch-manipulation ${
+                                        activeTab === "detranslator"
+                                            ? "bg-white/10 text-white border border-white/20 shadow-inner backdrop-blur-md"
+                                            : "text-slate-400 hover:text-slate-200"
+                                    }`}
+                                    style={{ minHeight: '40px' }}
+                                >
+                                    <i data-lucide="refresh-cw" class="h-3.5 w-3.5"></i>
+                                    Decoder
+                                </button>
+                                <button
+                                    onClick={() => setActiveTab("grid")}
+                                    className={`flex-1 md:flex-none px-3 sm:px-5 py-2.5 rounded-lg text-[11px] sm:text-xs font-bold tracking-wide transition-all duration-200 flex items-center justify-center gap-1.5 active:scale-95 shrink-0 select-none touch-manipulation ${
+                                        activeTab === "grid"
+                                            ? "bg-white/10 text-white border border-white/20 shadow-inner backdrop-blur-md"
+                                            : "text-slate-400 hover:text-slate-200"
+                                    }`}
+                                    style={{ minHeight: '40px' }}
+                                >
+                                    <i data-lucide="grid" class="h-3.5 w-3.5"></i>
+                                    NCL Grid
+                                </button>
+                            </div>
+                        </div>
+                    </header>
+
+                    {/* Main Content Space */}
+                    <main className="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6 md:p-8 flex flex-col justify-center gap-4 relative z-10">
+                        
+                        {/* TAB 1: TRANSLATOR */}
+                        {activeTab === "translator" && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-stretch">
+                                <div className="glass-panel rounded-2xl p-4 sm:p-5 flex flex-col justify-between">
+                                    <div>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-300 mono-font">English Input</span>
+                                            <button 
+                                                onClick={() => setEnglishInput("")}
+                                                className="text-slate-400 hover:text-rose-400 p-2 rounded-lg hover:bg-white/5 border border-transparent hover:border-white/10 transition active:scale-90"
+                                                title="Clear"
+                                                style={{ minWidth: '40px', minHeight: '40px', display: 'flex', alignItems: 'center', justifycontent: 'center' }}
+                                            >
+                                                <i data-lucide="trash-2" class="h-4 w-4 sm:h-5 sm:w-5"></i>
+                                            </button>
+                                        </div>
+                                        <textarea
+                                            value={englishInput}
+                                            onChange={(e) => setEnglishInput(e.target.value)}
+                                            placeholder="Type English text to encode to NCL..."
+                                            autoCapitalize="off"
+                                            autoCorrect="off"
+                                            spellCheck="false"
+                                            className="w-full h-32 md:h-64 glass-input rounded-xl p-3 sm:p-4 text-sm sm:text-base focus:ring-1 focus:ring-white/30 focus:border-white/30 outline-none resize-none transition text-slate-100"
+                                        />
+                                    </div>
+                                    <div className="mt-3 pt-2 border-t border-white/5 flex justify-between text-[11px] text-slate-400 font-mono">
+                                        <span>{englishInput.length} characters</span>
+                                    </div>
+                                </div>
+
+                                <div className="glass-panel rounded-2xl p-4 sm:p-5 flex flex-col justify-between">
+                                    <div>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-300 mono-font">NCL Output</span>
+                                            <button 
+                                                onClick={() => copyToClipboard(symbolOutput)}
+                                                className="text-cyan-300 hover:text-cyan-200 glass-button flex items-center justify-center gap-1.5 text-[11px] sm:text-xs font-bold px-3 py-2 rounded-lg transition active:scale-95"
+                                                style={{ minHeight: '40px' }}
+                                            >
+                                                {copied ? (
+                                                    <React.Fragment>
+                                                        <i data-lucide="check" class="h-3.5 w-3.5 text-emerald-400"></i>
+                                                        <span className="text-emerald-400">Copied!</span>
+                                                    </React.Fragment>
+                                                ) : (
+                                                    <React.Fragment>
+                                                        <i data-lucide="copy" class="h-3.5 w-3.5"></i>
+                                                        <span>Copy</span>
+                                                    </React.Fragment>
+                                                )}
+                                            </button>
+                                        </div>
+                                        <div className="w-full h-32 md:h-64 glass-input rounded-xl p-3 sm:p-4 text-lg sm:text-2xl font-bold tracking-widest text-cyan-300 overflow-y-auto max-h-[260px] select-all mono-font shadow-inner">
+                                            {symbolOutput || <span className="text-slate-600 font-normal text-xs sm:text-sm tracking-normal">NCL translation will appear here...</span>}
+                                        </div>
+                                    </div>
+                                    <div className="mt-3 pt-2 border-t border-white/5 text-[10px] sm:text-[11px] text-slate-400 flex items-start gap-1.5 font-mono">
+                                        <i data-lucide="info" class="h-3.5 w-3.5 text-cyan-400 shrink-0 mt-0.5"></i>
+                                        <span>English letters convert to digital scales, then map directly to glossy liquid NCL keys.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* TAB 2: DE-TRANSLATOR (DECODER) */}
+                        {activeTab === "detranslator" && (
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-stretch">
+                                <div className="glass-panel rounded-2xl p-4 sm:p-5 flex flex-col justify-between">
+                                    <div>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-300 mono-font">NCL Input</span>
+                                            <button 
+                                                onClick={() => setSymbolInput("")}
+                                                className="text-slate-400 hover:text-rose-400 p-2.5 rounded-lg hover:bg-white/5 border border-transparent hover:border-white/10 transition active:scale-90"
+                                                title="Clear"
+                                                style={{ minWidth: '40px', minHeight: '40px', display: 'flex', alignItems: 'center', justifycontent: 'center' }}
+                                            >
+                                                <i data-lucide="trash-2" class="h-4 w-4 sm:h-5 sm:w-5"></i>
+                                            </button>
+                                        </div>
+                                        <textarea
+                                            value={symbolInput}
+                                            onChange={(e) => setSymbolInput(e.target.value)}
+                                            placeholder="Type or paste NCL symbols here (e.g. ! @ £)..."
+                                            autoCapitalize="off"
+                                            autoCorrect="off"
+                                            spellCheck="false"
+                                            className="w-full h-24 sm:h-32 md:h-44 glass-input rounded-xl p-3 sm:p-4 text-base sm:text-lg font-bold tracking-widest text-cyan-300 placeholder-slate-800 focus:ring-1 focus:ring-white/30 focus:border-white/30 outline-none resize-none transition mono-font"
+                                        />
+                                        
+                                        {/* Physical style Key Matrix */}
+                                        <div className="mt-4">
+                                            <span className="text-[9px] sm:text-[10px] uppercase font-bold text-slate-400 block mb-2 font-mono tracking-wider">Refractive NCL Pad:</span>
+                                            <div className="grid grid-cols-6 gap-1.5 sm:flex sm:flex-wrap">
+                                                {Object.values(DIGIT_TO_SYMBOL).map((sym) => (
+                                                    <button
+                                                        key={sym}
+                                                        onClick={() => setSymbolInput(prev => prev + sym)}
+                                                        className="h-10 w-full sm:w-11 rounded-lg glass-button text-cyan-300 hover:text-white font-black flex items-center justify-center transition active:scale-90 text-sm sm:text-base select-none"
+                                                        style={{ minHeight: '40px' }}
+                                                    >
+                                                        {sym}
+                                                    </button>
+                                                ))}
+                                                <button
+                                                    onClick={() => setSymbolInput(prev => prev + " ")}
+                                                    className="col-span-2 h-10 px-3.5 rounded-lg glass-button text-[11px] font-bold text-slate-200 flex items-center justify-center transition active:scale-90 select-none hover:text-white"
+                                                    style={{ minHeight: '40px' }}
+                                                >
+                                                    Space
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="mt-4 pt-2 border-t border-white/5 text-[10px] sm:text-xs text-slate-400 font-mono">
+                                        Use spaces to separate NCL letters to prevent overlap decoding.
+                                    </div>
+                                </div>
+
+                                <div className="glass-panel rounded-2xl p-4 sm:p-5 flex flex-col justify-between">
+                                    <div>
+                                        <div className="flex items-center justify-between mb-2">
+                                            <span className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-slate-300 mono-font">Decoded English</span>
+                                            <button 
+                                                onClick={() => copyToClipboard(englishOutput)}
+                                                className="text-cyan-300 hover:text-cyan-200 glass-button flex items-center justify-center gap-1 text-[11px] sm:text-xs font-bold px-2.5 py-1.5 rounded-lg transition active:scale-95"
+                                                style={{ minHeight: '40px' }}
+                                            >
+                                                {copied ? (
+                                                    <React.Fragment>
+                                                        <i data-lucide="check" class="h-3.5 w-3.5 text-emerald-400"></i>
+                                                        <span className="text-emerald-400">Copied!</span>
+                                                    </React.Fragment>
+                                                ) : (
+                                                    <React.Fragment>
+                                                        <i data-lucide="copy" class="h-3.5 w-3.5"></i>
+                                                        <span>Copy</span>
+                                                    </React.Fragment>
+                                                )}
+                                            </button>
+                                        </div>
+                                        <div className="w-full h-32 md:h-64 glass-input rounded-xl p-3 sm:p-4 text-sm sm:text-lg font-medium text-slate-100 overflow-y-auto max-h-[260px] select-all">
+                                            {englishOutput || <span className="text-slate-600 font-normal text-xs sm:text-sm">English output will appear here...</span>}
+                                        </div>
+                                    </div>
+                                    <div className="mt-3 pt-2 border-t border-white/5 text-[10px] sm:text-[11px] text-slate-400 flex items-start gap-1.5 font-mono">
+                                        <i data-lucide="info" class="h-3.5 w-3.5 text-cyan-400 shrink-0 mt-0.5"></i>
+                                        <span>Ensure symbols are typed with spaces between letters (e.g. ! @ £ = ABC).</span>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* TAB 3: SYMBOL GRID */}
+                        {activeTab === "grid" && (
+                            <div className="glass-panel rounded-2xl p-4 sm:p-6 space-y-4 sm:space-y-6">
+                                <div>
+                                    <h2 className="text-sm sm:text-base font-bold text-slate-200 flex items-center gap-2">
+                                        <i data-lucide="grid" class="h-4 w-4 sm:h-5 sm:w-5 text-cyan-400"></i>
+                                        NCL (Nexora Communication Language) Reference Grid
+                                    </h2>
+                                    <p className="text-[11px] sm:text-xs text-indigo-200/60 mt-0.5">
+                                        Full character matrices mapping the standard alphabet to NCL sequences.
+                                    </p>
+                                </div>
+
+                                {/* Alphabet Grid */}
+                                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-2">
+                                    {ALPHABET.map((letter, idx) => {
+                                        const num = (idx + 1).toString();
+                                        const sym = num.split("").map(digit => DIGIT_TO_SYMBOL[digit] || digit).join("");
+                                        return (
+                                            <div 
+                                                key={letter}
+                                                className="glass-input hover:bg-white/[0.05] border border-white/10 p-2 sm:p-3.5 rounded-xl flex flex-col items-center justify-center transition active:scale-95 select-none"
+                                            >
+                                                <span className="text-[9px] sm:text-[10px] font-mono text-indigo-200/40">#{num}</span>
+                                                <span className="text-base sm:text-xl font-bold text-white my-0.5 sm:my-1">{letter}</span>
+                                                <span className="text-xs sm:text-sm font-bold text-cyan-300 mono-font">{sym}</span>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+
+                                {/* Key Digit Rules */}
+                                <div className="glass-input border border-white/5 rounded-xl p-3.5 sm:p-5">
+                                    <span className="text-[10px] sm:text-xs font-bold text-slate-400 mono-font block mb-3 uppercase tracking-wider">Base Digit Keys</span>
+                                    <div className="grid grid-cols-5 md:grid-cols-10 gap-2">
+                                        {Object.entries(DIGIT_TO_SYMBOL).map(([digit, symbol]) => (
+                                            <div key={digit} className="bg-black/30 border border-white/5 p-2 rounded-lg flex flex-col items-center justify-center">
+                                                <span className="text-[10px] sm:text-xs text-indigo-200/50 font-mono font-bold">{digit}</span>
+                                                <span className="text-base sm:text-xl font-black text-cyan-300 mono-font">{symbol}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                    </main>
+
+                    {/* Footer */}
+                    <footer className="border-t border-white/5 py-4 text-center text-[10px] sm:text-[11px] text-slate-500 mono-font mt-auto pb-safe">
+                        Nexora Communication Language Suite &bull; NCL Fluid Glass Edition
+                    </footer>
+                </div>
+            );
+        }
+
+        // Mount React App
+        const rootElement = document.getElementById('root');
+        const root = ReactDOM.createRoot(rootElement);
+        root.render(<App />);
+    </script>
+</body>
+</html>
